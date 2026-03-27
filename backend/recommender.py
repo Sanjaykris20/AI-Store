@@ -1,18 +1,27 @@
+import os
 import pandas as pd
 from backend.rating_based import get_rating_based_recommendations
 from backend.collaborative_filtering import get_collaborative_recommendations
 from backend.content_filtering import get_content_based_recommendations
 
-def get_combined_recommendations(user_id=None, is_new_user=False, current_product_id=None, top_n=5, data_path='cleaned_data.csv'):
+# Resolve CSV path relative to this file so it works on Reflex Cloud
+_BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+_ROOT_DIR = os.path.dirname(_BACKEND_DIR)
+_DEFAULT_CSV = os.path.join(_ROOT_DIR, "cleaned_data.csv")
+
+def get_combined_recommendations(user_id=None, is_new_user=False, current_product_id=None, top_n=5, data_path=None):
     """
     Combine all recommendation approaches.
     Logic:
     IF new user: use rating-based
     ELSE: use collaborative + content
     """
+    if data_path is None:
+        data_path = _DEFAULT_CSV
     if is_new_user or user_id is None:
         # Rating-based recommendations for new users
         print("Fetching rating-based recommendations for new user...")
+
         return get_rating_based_recommendations(top_n=top_n, min_reviews=2, data_path=data_path)
     
     else:

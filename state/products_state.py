@@ -3,6 +3,11 @@ import pandas as pd
 import os
 from typing import List, Dict, Any
 
+# Resolve CSV path relative to this file so it works locally AND on Reflex Cloud
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_ROOT = os.path.dirname(_HERE)
+CSV_PATH = os.path.join(_ROOT, "cleaned_data.csv")
+
 class ProductsState(rx.State):
     """Local state for fetching global catalog of products."""
     all_products: List[Dict[str, Any]] = []
@@ -16,8 +21,9 @@ class ProductsState(rx.State):
             self.search_query = params["q"]
             
         try:
-            if os.path.exists('cleaned_data.csv'):
-                data = pd.read_csv('cleaned_data.csv')
+            if os.path.exists(CSV_PATH):
+                data = pd.read_csv(CSV_PATH)
+
                 unique_products = data.drop_duplicates(subset=['ProdID'])
                 
                 # Pre-calculate prices for sorting (since they are synthetic)
