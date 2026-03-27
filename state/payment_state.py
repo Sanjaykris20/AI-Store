@@ -1,8 +1,14 @@
 import reflex as rx
 import random
 import string
+import os
+from dotenv import load_dotenv
 from .cart_state import CartState
 from .user_state import UserState
+
+load_dotenv()
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "rzp_test_SWFuoAyeu1IQk4")
+
 
 class PaymentState(rx.State):
     """
@@ -31,7 +37,7 @@ class PaymentState(rx.State):
         return rx.call_script(
             f"""
             var options = {{
-                "key": "rzp_test_YourTestKeyHere", 
+                "key": "{RAZORPAY_KEY_ID}",
                 "amount": "{amount_in_paise}",
                 "currency": "INR",
                 "name": "Shopio e-Store",
