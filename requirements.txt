@@ -1,6 +1,5 @@
 pandas
 numpy
 scikit-learn
-streamlit
 reflex==0.8.28.post1
 pyrebase4
