@@ -1,0 +1,1184 @@
+
+==================================================
+FILE: 6-7pm Login Page UI.docx
+==================================================
+Login Page UI (Reflex)
+Create a login page where:
+User enters User ID and Password
+System checks if user exists
+If not → create new user
+Then redirect to Home page
+Function Name
+def login():
+Components to Use
+rx.vstack() → full page layout
+rx.input() → user_id input
+rx.input(type="password") → password
+rx.button() → login button
+rx.text() → heading / messages
+UI Structure
+vstack
+ ├── heading (Login)
+ ├── input (User ID)
+ ├── input (Password)
+ ├── button (Login / Signup)
+ └── text (status message)
+State Variables (Very Important)
+user_id: str
+password: str
+login_status: str
+Logic Function
+def handle_login():
+Logic:
+Check if user exists in Firebase
+If exists → login
+Else → create new user
+Update status message
+Redirect to home
+Expected Flow
+User enters details
+    ↓
+Click Login
+    ↓
+Check Firebase
+    ↓
+Existing user → Login
+New user → Create account
+    ↓
+Redirect to Home Page
+Task
+Implement:
+login()
+handle_login()
+state variables
+Do NOT hardcode users — use Firebase.
+2. Firebase Logic
+def check_user(user_id):
+    # check in firebase DB
+    return True / False
+def create_user(user_id, password):
+    # store in firebase
+Step 1: Create Firebase Project
+Go to Firebase Console
+Click “Create Project”
+Give name → e.g. rec-system-app
+Disable Google Analytics (optional)
+Step 2: Enable Firestore
+Go to Firestore Database
+Click Create Database
+Choose:
+Start in test mode
+Step 3: Get Credentials
+Go to:
+Project Settings → Service Accounts
+Click:
+“Generate new private key”
+Download JSON file
+Save as:
+firebase_key.json
+How Login Logic Works
+User enters ID + Password
+        ↓
+Check in Firestore
+        ↓
+If exists → Login
+Else → Create new user
+==================================================
+FILE: 6-7pm.docx
+==================================================
+AI E-commerce Recommendation Engine 
+ 1. Project Overview
+This project is an AI-powered E-commerce Recommendation System built using:
+Reflex (Frontend + State Management)
+Python (Backend ML logic)
+Firebase (Authentication)
+Razorpay (Payment Integration –/demo)
+The system provides personalized product recommendations based on:
+New user → Rating-based filtering—if the user sign -up
+Existing user → Content-based + Collaborative filtering – if the user login
+Recommendation as per your history – heading for content based filtering
+Similar user’s like your also liked – heading for collaborative filtering
+ 2. Project Architecture
+project/
+│
+├── assets/                 → product images (icon)
+│
+├── components/             → reusable UI components – navbar, product cards (recommendations)
+Search option, chat bot
+│
+├── pages/                  → all frontend pages – wishlist/orders/cart/profile
+│
+├── backend/                → ML & logic files 
+│
+├── state/                  → Reflex state management
+│
+├── .env                    → API keys – groq llama for chatbot, api key and secret key for razorpay
+│
+├── app.py                  → main app entry
+ 3. Core Concept of This Project
+🔹 1. Dataset (clean_data.csv)
+Contains:
+User’s ID
+Product ID
+Rating
+Product info
+ Used ONLY for recommendation logic
+🔹 2. Firebase
+Used for:
+User authentication (login/signup)
+🔹 3. State (Very Important)
+Reflex uses State classes to:
+Store user session
+Manage cart
+Trigger backend logic
+ Without state → app won’t behave dynamically
+🔹 4. Recommendation Flow
+Login → Identify user → Decide type
+IF new user:
+    → rating-based recommendations
+IF old user:
+    → collaborative filtering
+    → content filtering
+4. Backend Files Explanation
+ content_filtering.py
+Purpose:
+Recommend products similar to a given product
+Logic:
+Convert “Tags” column → TF-IDF
+Apply cosine similarity
+Find similar products
+ collaborative_filtering.py
+Purpose:
+Recommend based on similar users
+Logic:
+Create user-item matrix
+Apply cosine similarity between users
+Find similar users
+Recommend products they liked
+ rating_based.py
+Purpose:
+Used for new users
+Logic:
+Group by product
+Take average rating
+Sort descending
+ cleaning_data.py
+Purpose:
+Clean dataset before use
+Important tasks:
+Remove invalid IDs
+Handle missing values
+Clean image URLs
+Convert types
+ recommender.py (Important Addition)
+Purpose:
+Combine all recommendation approaches
+Logic:
+IF new user:
+    use rating-based
+ELSE:
+    use collaborative + content
+ 5. State Files (Very Important)
+user_state.py
+Stores:
+user_id
+logged_in
+user_type (new / old)
+Logic:
+On login → fetch Firebase UID
+Map to numeric ID
+Check if exists in dataset
+ recommendation_state.py
+Purpose:
+Call backend ML functions
+Store recommendations
+Logic:
+Check user_type
+Call respective model
+Convert result → UI format
+ cart_state.py
+Stores:
+cart items
+total price
+Functions:
+add_to_cart()
+remove_from_cart()
+calculate_total()
+ 6. Pages (Frontend in Reflex)
+ 1. Home Page
+Purpose:
+Entry point
+Show recommendations
+Reflex Functions:
+rx.vstack() → layout
+rx.grid() → product layout
+rx.foreach() → loop products
+Logic:
+Button → triggers recommendation_state
+Display product cards
+ 2. Login Page
+Purpose:
+Authenticate user
+Reflex Functions:
+rx.input() → email/password
+rx.button() → login action
+rx.cond() → success message
+Logic:
+Call Firebase login
+Update user_state
+ 3. Signup Page
+Purpose:
+Register new users
+Logic:
+Create Firebase user
+Assign numeric user_id
+Save mapping
+ 4. Products Page
+Purpose:
+Show all products
+Functions:
+rx.grid()
+rx.card()
+ 5. Product Detail Page
+Purpose:
+Show detailed info
+UI:
+Image
+Description
+Buttons
+Actions:
+Add to cart
+Buy now
+6. Cart Page
+Purpose:
+Show selected items
+Logic:
+Fetch from cart_state
+Display total price
+ 7. Checkout Page
+Purpose:
+Collect address/details
+Fields:
+Name
+Address
+Phone
+ 8. Payment Page
+Purpose:
+Handle payment
+Razorpay Integration (Concept)
+Backend:
+Create order using Razorpay API
+Frontend:
+Redirect to payment link OR
+Use test payment button
+For this project:
+Use dummy payment success page
+ 9. Recommendation Page
+Purpose:
+Show personalized products
+Logic:
+Fetch from recommendation_state
+ 10. Profile Page
+Purpose:
+Show user info
+Order history (optional)
+ 7. Components
+Reusable UI:
+Navbar
+Footer
+Product Card
+Recommendation Card
+ Improves code reusability
+ 8. Images Handling
+Option 1:
+Use dataset URLs (recommended)
+Option 2:
+Store in assets/
+ 9. Firebase Integration
+Used for:
+Login
+Signup
+Steps:
+Create Firebase project
+Enable Email/Password
+Download JSON key
+Use firebase-admin in backend
+ 10. Payment Integration (Razorpay)
+Real-world:
+Requires backend APIs
+Order creation
+Webhooks
+For this project:
+Use test payment
+Redirect to success page
+ 11. User Flow
+ New User
+Signup → Login → Rating-based recommendations
+ Existing User
+Login → Collaborative + Content recommendations
+ Shopping Flow
+Products → Detail → Cart → Checkout → Payment → Success
+ 12. Important Notes
+ Dataset Users ≠ Firebase Users
+ Use mapping system
+ State is Mandatory
+Without state:
+No login persistence
+No dynamic UI
+Keep ML and UI Separate
+Backend → ML logic
+Pages → UI only
+ Don’t Overcomplicate
+Use CSV for ML
+Firebase only for auth
+ 13. Step-by-Step Build Order
+Login & Signup
+User State
+Products Page
+Product Detail
+Cart
+Recommendation Integration
+Home Page
+Checkout
+Payment
+AI chatbot (Groq llm)
+ Final Goal
+Interns should be able to:
+✔ Build full e-commerce flow
+✔ Implement recommendation system
+✔ Understand ML + frontend integration
+✔ Work with real-world architecture
+Bonus (Optional)- this improvement in this project can explain in internal presentation
+You can extend:
+Review summarization
+Smart recommendations explanation
+ Conclusion
+This project is a complete end-to-end AI application combining:
+Machine Learning
+Frontend Development
+Backend Integration
+Real-world architecture
+Focus on understanding logic + flow, not just code.
+End of Document
+==================================================
+FILE: 8-9 pm Project documentation.docx
+==================================================
+Project Title:  AI Enabled Recommendation Engine for an E-commerce Platform
+Project Statement:
+This project aims to develop a recommendation system that suggests products to users based on their historical behavior and the actions of similar users. By analyzing data such as purchase history and browsing activity, the system will enhance the user experience, increase sales, and improve customer engagement on an e-commerce platform. The project will involve implementing either a collaborative filtering or a content-based filtering approach to build the recommendation model.
+Outcomes
+Personalized Recommendations: Deliver tailored product suggestions to users based on their individual tastes and past actions.
+Improved User Experience: Enhance customer satisfaction by providing relevant product recommendations, making the platform more intuitive and engaging.
+Increased Sales: Boost revenue by surfacing products that users are more likely to purchase.
+Optimized Data Utilization: Effectively use large datasets of user behavior and product information to create valuable business insights.
+Modules to be Implemented
+Module 1: Data Collection and Preprocessing
+Gather user behavior data (e.g., browsing history, purchase records, ratings).
+Clean and transform the dataset to handle missing values and prepare it for model input.
+Create a user-item matrix to represent user interactions with products.
+Module 2: Recommendation Model Development
+Choose and implement a recommendation algorithm (e.g., collaborative filtering or content-based filtering).
+Train the model using the preprocessed user-item data to learn recommendation patterns.
+Optimize model parameters to improve the accuracy and relevance of suggestions.
+Module 3: Recommendation Generation and Evaluation
+Develop a system to generate real-time product recommendations for individual users.
+Evaluate the model's performance using metrics like precision, recall, and F1-score.
+Conduct A/B testing or other evaluation methods to measure the impact of the recommendations on user engagement and sales.
+Module 4: Deployment and Integration
+Deploy the recommendation model into a live environment.
+Integrate the recommendation engine with the e-commerce platform's front-end to display suggestions to users.
+Conduct functional and performance tests to ensure the system is reliable and scalable.
+Milestones & Timeline (8 Weeks Total)
+Milestone 1 (Weeks 1–2): Data Preparation
+Objective: Prepare clean, structured datasets for model development.
+Tasks: Collect user and product data; handle data inconsistencies; build the user-item interaction matrix.
+Milestone 2 (Weeks 3–4): Model Building
+Objective: Develop and train the core recommendation model.
+Tasks: Select and implement a recommendation algorithm; train the model on the prepared data; perform initial model tuning.
+Milestone 3 (Weeks 5–6): Evaluation and Refinement
+Objective: Evaluate model performance and refine the algorithm.
+Tasks: Calculate and analyze evaluation metrics (e.g., precision, recall); fine-tune the model to improve accuracy; test different recommendation scenarios.
+Milestone 4 (Weeks 7–8): System Deployment
+Objective: Deploy the recommendation engine and integrate it with the platform.
+Tasks: Deploy the model to a production-like environment; integrate the recommendation logic with the e-commerce site; conduct final performance and reliability tests.
+Evaluation Criteria
+Week 2 – Milestone 1: Clean and structured datasets ready for training; user-item matrix created successfully.
+Week 4 – Milestone 2: Recommendation model developed and trained; initial performance benchmarks met.
+Week 6 – Milestone 3: Model's performance validated using metrics like precision and recall; model refined for better accuracy.
+Week 8 – Milestone 4: Full recommendation system deployed and integrated; system runs reliably, generating real-time product suggestions.
+==================================================
+FILE: reflex.docx
+==================================================
+Create virtual environment = python -m venv venv
+Activate vm = venv\Scripts\Activate
+Install reflex = pip install reflex
+Initialize reflex = reflex init
+https://reflex.dev/docs/recipes/
+In this reflex docs under recipes we can get a code for layout, content, login form and others.
+Basic index function with style properties
+import reflex as rx
+def index():
+    return rx.text('This is a home page', font_size='20px', bg="green", color='red',
+   font_weight="bold", _hover={'color':'white', 'bg':'black', 'font_size': '30px'})
+app = rx.App()
+app.add_page(index)
+# app._compile()
+7. Run in terminal by write (reflex run)
+8. This app._compile() is optional, in previous versions of reflex it used but now when you press the ctrl+S, your code will be compiled and you can see the output.
+9. Suppose you have a lot of items that you cannot add to the home page. In that case, you can create a new function for them and then add that function using the add_page() function, where you assign a route for that page.
+10. As shown in the above image, a new about function was created and then added as a page using the add_page() function.
+11. Navbar we will write now
+12. In the main file, we will connect this
+13. if I want to make sure, that if someone will click on the logo (suppose added image), we will redirect them on the home page so for that in the navbar inside the box I will add a rx.link and inside that I will add the rx.image and route (‘/’)
+def navbar():
+    return rx.flex(
+        rx.box(
+            rx.link(
+                rx.image(src='Chat bot-rafiki.png',
+                     width='100px', align="left"), href='/')
+),
+And then inside the about and post page, I will add what the home page is returning
+def about():
+    return rx.container(
+        navbar(),
+rx.text('About app.....'))
+def posts():
+    return rx.container(
+        navbar(),
+rx.text('About posts....'))
+14.  This rx.container contains the content to a certain limit and it adds margins to right and left. So, as in a container we have added the navbar, text and we can add button as well or things like that.
+Now to add a subtle line after the navbar, we can use rx.divider, here:
+def index():
+    return rx.container(
+        navbar(),
+        rx.divider(),
+        rx.text('THis is a home page')
+    )
+Now, let’s create kind of a grid here after the navbar, so that we will have a two items here, so that when the screen is medium size or larger, I’m gonna have two sections in one row and  when the screen is smaller I will have only one column basically, so I’m gonna create another component inside our components folder with the name of header.py
+So, in the header.py file we have written this code but still it does not have a feature to change the images layout by changing the screen size
+import reflex as rx
+def header():
+    return rx.grid(
+        rx.center(
+            rx.box(
+                rx.heading('I am Simran!'),
+                rx.heading('This project is about.....,'),
+                rx.button('Click here!')
+            )
+        ),
+        rx.center(
+            rx.image(src='Chat bot-rafiki.png')
+        )
+    )
+18. So, here to specify that we need to columns on medium and bigger size and one column on smaller size. So we will going to add new props “columns”={}, right after the 2 columns inside the rx.grid only. This columns is a dict, it says that on the smaller screen go with one column.
+def header():
+    return rx.grid(
+        rx.center(
+            rx.box(
+                rx.heading('I am Simran!'),
+                rx.heading('This project is about.....,'),
+                rx.button('Click here!')
+            )
+        ),
+        rx.center(
+            rx.image(src='Chat bot-rafiki.png')
+        ),
+        columns={
+    "base": "1",
+    "md": "2",
+    "lg": "3"
+}
+    )
+==================================================
+FILE: 6-7 pm.pptx
+==================================================
+DATA UNDERSTANDING & USER–ITEM MATRIX (FULL THEORY + EXAMPLES)
+What is a Dataset?
+Definition (Simple):
+A dataset is a collection of information stored in a table-like format.It contains rows and columns, like an Excel sheet.
+Columns = features of the data
+Example:
+UserID
+ProductID
+Rating
+Category
+Price
+Rows = individual records
+Example:One row may represent:
+one purchase
+one product
+one rating
+one user action
+Example Dataset from Amazon (simplified)
+This tells us which user interacted with which product and how much.
+Types of Data Used in Recommendation Systems
+A recommendation engine uses two major types of data:
+A. User Behavior Data
+These are the actions performed by the user on the app/website.
+1. Clicks
+If a user clicks on a product, it means they showed interest.
+Example:You click on “Nike Running Shoes” → system learns you like sports shoes.
+2. Search History
+What users type in the search bar.
+Example:User searches “wireless earphones” → recommend audio products.
+3. Add to Cart
+Strong signal that user likes that item.
+Example:User added Boat Airdopes 141 to cart → recommend similar earbuds.
+
+4. Purchase History
+Most important behavior because it shows confirmed interest.
+Example:If a user bought a Samsung phone, they may like:
+Samsung cases
+Tempered glass
+Samsung smartwatches
+5. Ratings & Reviews
+Users explicitly tell the system whether they liked something.
+Example:User rates a book 5 stars → system suggests similar books.
+B. Product Metadata (Item Data)
+These are the characteristics of the product.
+Examples:
+Category: Electronics, Beauty, Clothing
+Brand: Apple, Samsung, Nike
+Price: ₹499, ₹12999
+Color: Black, Blue
+Description: “Wireless Bluetooth earphones with mic”
+Features: 20-hour battery life, waterproof, noise cancellation
+Why product metadata is important?
+In content-based filtering, the model recommends:“Items similar to what the user liked earlier.”
+To check similarity, the model uses:
+category
+brand
+keywords in description
+price range
+3. What is Data Preprocessing?
+Definition:
+Data preprocessing is the step where we clean, fix, and prepare raw data so that the ML model can understand it.
+It is like washing vegetables before cooking.Unclean data → bad predictions.
+Common Preprocessing Steps
+A. Handling Missing Values
+Example:Some products may not have a price or category.
+We fill missing data, remove it, or replace with averages.
+B. Removing Duplicates
+Example:If the same user rating is stored twice:
+This will confuse the model.
+C. Converting Data Types
+Example:Price stored as text "₹999" must be converted to number 999.
+D. Normalization
+Sometimes numbers must be brought to the same range.
+Example:
+Product price: ₹250–₹50,000
+Rating: 1–5
+Different ranges → ML strugglesNormalization solves this.
+E. Encoding (Converting Text to Numbers)
+Models cannot understand text, only numbers.
+Example:Category = “Electronics” → convert to number like 0, 1, 2…(One-hot encoding or label encoding)
+4. What is a User–Item Interaction Matrix?
+Definition:
+It is a large table where:
+Rows = Users
+Columns = Items/Products
+Values = how much the user interacted with that item
+This matrix is the foundation of collaborative filtering.
+Example
+How to read this:
+U1 rated P1 = 5
+U2 bought P4 = 4
+U3 never interacted with P3 (value = 0)
+What value do we store?
+Depending on dataset:
+Rating
+Click count
+Purchase count
+1 (clicked) or 0 (not clicked)
+5. Sparse Matrix (Very Important Concept)
+Definition:
+A sparse matrix is a matrix that contains a LOT of zeros.
+Why?
+Because:
+A user interacts with only 5–10 products out of 10,000+ products.
+So 99% of the matrix will be zeros.
+Example (simple)
+Most entries are 0, meaning no interaction.
+Why is sparse matrix important?
+Collaborative filtering must work on sparse data.
+Matrix is huge (thousands × thousands).
+A lot of calculations will involve zeros.
+This is why recommendation engines use special algorithms to handle it.
+6. How Content-Based Filtering Uses Data
+Definition:
+Content-based filtering recommends products similar to the products the user liked, based on product features.
+It uses product-level data:
+category
+brand
+description
+price
+keywords
+Example:
+User liked:Samsung Galaxy M14
+Model looks for similar products:
+Samsung Galaxy M31
+Samsung A14
+Vivo smartphones in same price range
+Phones with similar features
+Here, it does NOT care about what other users bought.It cares only about item similarity.
+How similarity is calculated?
+Simple example:Convert product descriptions into vectors using TF-IDF, then compare using cosine similarity.
+But you don't need to teach math to students today — just explain the concept.
+7. How Collaborative Filtering Uses Data
+Definition:
+Collaborative filtering recommends items based on similar users or similar items.
+It uses the user–item matrix.
+
+Two types:
+A. User–User Collaborative Filtering
+“If users A and B have similar taste, recommend to A what B liked.”
+Example:
+User A:
+watches action movies
+buys sneakers
+loves fitness products
+User B:
+watches action movies
+buys sneakers
+→ Recommend fitness products to User B.
+B. Item–Item Collaborative Filtering
+“If two items are bought together often, recommend them together.”
+Example:
+Users who bought:iPhone → also bought AirPods.
+So if a new user buys an iPhone → system recommends AirPods.
+How Semantic search done:
+Semantic search , in semantic search we are doing the searching on the basis of the meaning of the words. Not as keyword search where we take 2-3 important words and find the similar words in our document.
+# We use the TF-IDF(Term Frequency - Inverse Document Frequency) vector technique to convert the Tags column 
+
+Name of products, description, category, Brand
+
+ text into vectors.
+==================================================
+FILE: 6-7pm (1).pptx
+==================================================
+Module: Building an AI-Powered E-Commerce Interface
+Topic: Product Grids, State-Driven Search, and Login Security
+Slide 1: The "Amazon" Layout – Grid Systems
+E-commerce sites rely on rx.grid. Unlike a simple stack, a grid allows products to align perfectly in rows and columns.
+columns: Define how many products per row (e.g., 4 on desktop, 1 on mobile).
+spacing: The gap between product cards.
+def product_grid():
+    return rx.grid(
+        rx.foreach(
+            ProductState.items, 
+            lambda item: product_card(item)
+        ),
+        columns=[1, 2, 3, 4], # Responsive: 1 col on mobile, 4 on desktop
+        spacing="4",
+        width="100%",
+    )
+Building a "Product Card" Component
+A professional product card needs a specific "Stack" structure:
+Top: rx.image (The Product).
+Middle: rx.vstack (name of product, and AI Recommendation Tag).
+Bottom: rx.hstack (Star ratings and "Add to Cart" button).
+Visual Tip: Use border_radius="lg" and _hover={"transform": "translateY(-5px)"} to make cards feel interactive.
+State-Driven Recommendations
+This is where the "AI" part shows up in the UI. We use rx.State to filter products based on user behavior or search.
+The Goal: As the user types, the grid updates in real-time.
+Intern Practice:
+class SearchState(rx.State):
+    search_query: str = ""
+
+    @rx.var
+    def filtered_products(self) -> list[dict]:
+        # This acts as the logic for your RecSys
+        return [p for p in all_products if self.search_query in p["name"]]
+
+# UI Component
+rx.input(placeholder="Search products...", on_change=SearchState.set_search_query)
+Slide 4: The Login Page - Forms & Validation
+Professional login pages need rx.form for security and structured data handling.
+on_submit: Sends all input data to a single function.
+rx.input: Use type_="password" for the password field.
+def login_form():
+    return rx.form(
+        rx.vstack(
+            rx.heading("Welcome Back", size="7"),
+            rx.input(placeholder="Email", name="email", type="email"),
+            rx.input(placeholder="Password", name="password", type="password"),
+            rx.button("Login", type="submit", width="100%"),
+            align="center",
+            spacing="4",
+        ),
+        on_submit=LoginState.handle_login,
+    )
+Slide 5: User Feedback (Toasts & Loading)
+When a user clicks "Login" or "Add to Cart," the site must show it's working.
+rx.toast: A small pop-up notification at the corner of the screen.
+loading: A property for buttons that shows a spinner.
+def handle_login(self, form_data: dict):
+    self.is_loading = True
+    # Verify user...
+    yield rx.toast.info("Login Successful!")
+    self.is_loading = False
+Integrated Firebase (Data Persistence)
+Since you are using Firebase to save login details, interns must learn how to connect Reflex events to external SDKs.
+State Functions: Use async functions in your State to wait for Firebase responses without freezing the UI.
+Recommendation "Badges"
+To show the "AI" aspect, professional sites use specific labels like "Picked for You" or "99% Match."
+Use rx.badge with variant="surface" and unique colors to highlight AI-driven suggestions.
+Challenge: The AI-Ecom Home Page
+Dynamic Search: Implement a search bar that filters a list of 5 dummy products.
+Product Card: Create a component that displays a product name, and description of the product
+Protected Login: Create a login page that "toasts" (A small pop-up notification at the corner of the screen.
+) an error if the password is less than 6 characters.
+==================================================
+FILE: 6-7pm.pptx
+==================================================
+CONTENT-BASED RECOMMENDATION – STEP BY STEP EXPLANATION
+WHAT IS CONTENT-BASED FILTERING?
+Content-based filtering is a recommendation method where:
+The system recommends products that are similar to the product selected by the user.
+It does not depend on other users.It only depends on product information like tags, description, category, etc.
+In your case, similarity is calculated using the “Tags” column.
+STEP 1: CHECK IF THE PRODUCT EXISTS
+First, the system checks whether the product name entered by the user exists in the dataset.
+If the product is not found:
+It prints a message saying the item is not found.
+It returns an empty result.
+The process stops there.
+If the product exists, then it continues.
+STEP 2: CONVERT TEXT (TAGS) INTO NUMBERS
+Computers cannot understand text directly.
+So the “Tags” column (which contains text like “wireless bluetooth headphones”) is converted into numbers using a method called TF-IDF.
+What happens here?
+All product tags are taken.
+Sentences are broken into individual words.
+Common words like “the”, “is”, etc. are removed.
+Each word is converted into a numeric value.
+A matrix is created where:
+Rows = products
+Columns = words
+Values = importance of that word in that product
+Now each product becomes a numeric vector.
+STEP 3: CALCULATE SIMILARITY BETWEEN PRODUCTS
+After converting text into numbers, the system calculates similarity between all products.
+This is done using cosine similarity.
+Cosine similarity measures how close two products are based on their tag vectors.
+If similarity score is:
+Close to 1 → very similar
+Close to 0 → not similar
+A similarity matrix is created where:Each product is compared with every other product.
+STEP 4: FIND THE SELECTED PRODUCT INDEX
+The system finds the row number (index) of the product selected by the user.
+For example:If the selected product is at row 5,Then index = 5.
+This index helps the system know which product to compare with others.
+STEP 5: GET SIMILARITY SCORES FOR THAT PRODUCT
+Now the system looks at the similarity matrix and extracts similarity scores of the selected product with all other products.
+It creates a list like this conceptually:
+(Product 0, similarity score)(Product 1, similarity score)(Product 2, similarity score)and so on
+STEP 6: SORT PRODUCTS BY SIMILARITY
+The system sorts all products based on similarity score in descending order.
+Highest similarity comes first.
+Important:The first result will always be the product itself,because any product is 100% similar to itself.
+STEP 7: SELECT TOP SIMILAR PRODUCTS
+After sorting, the system selects the top N similar products.
+For example:If top_n = 10,It selects the 10 most similar products.
+Usually, the product itself should be removed from the recommendation list.
+STEP 8: FETCH PRODUCT DETAILS
+Now the system retrieves useful information of the selected similar products, such as:
+Product Name
+Review Count
+Brand
+Only these details are returned to the user.
+FINAL FLOW IN SIMPLE WORDS
+User selects a product.
+System checks if product exists.
+Product tags are converted into numbers.
+Similarity between products is calculated.
+Products are sorted by similarity.
+Top similar products are selected.
+Their details are returned as recommendations.
+WHY THIS IS CALLED CONTENT-BASED?
+Because recommendation is based on product content (tags),not on other users' behavior.
+If you like “Bluetooth Headphones”,the system recommends other products that also containwords like Bluetooth, wireless, audio, etc.
+SHORT SUMMARY
+Content-based filtering works like this:
+Similar content → Similar vector → High similarity → Recommended.
+==================================================
+FILE: 7-8pm.pptx
+==================================================
+Now, we will create a new project folder in our C or D drive, where ever you want to create depends on you.
+
+Groq api key
+
+
+In .env file we save the API keys.
+
+GROQ_API_KEY = “  ”
+2. Create virtual environment
+
+python -m venv venv
+
+3. Activate the environment
+
+venv\Scripts\activate
+PEP 8 is a style guide - it's a document that describes coding conventions and best practices for writing Python code. It covers things like:
+Indentation (4 spaces)
+Line length (79 characters)
+Naming conventions (snake_case for functions, PascalCase for classes)
+Where to put whitespace
+Import organization
+We can run this code to see the representation of data using the ast module. It will show the tree like structure. This is called Abstract syntax tree and its exactly the kind of data structure that we need in order to analyze our python source code.
+Abstract Syntax Trees (ASTs) are tree-like representations of the structure of source code. Python provides powerful tools for working with ASTs, allowing developers to analyze, modify, and generate code programmatically.
+
+import ast
+
+# Parse a simple Python expression into an AST
+node = ast.parse("x + y")
+print(ast.dump(node, indent=2))
+1. ast.parse() - The Code-to-Tree Converter
+What it does:
+Converts text code (string) into a tree structure (AST object) that Python can analyze.
+Analogy:
+Think of it like Google Translate:
+Input: Text in one language (Python code as string)
+Output: Structured data (Tree representation)
+Detailed Explanation:
+node = ast.parse("x + y")
+```
+
+**Breaking it down:**
+
+1. **`"x + y"`** - This is a STRING (text), not actual code
+   - Python sees it as: `'x + y'` (just characters)
+   - It's NOT running `x + y`, just reading it as text
+
+2. **`ast.parse()`** - This function does the magic:
+   - Takes the string `"x + y"`
+   - Analyzes it like a Python interpreter would
+   - Builds a **tree structure** representing the code
+
+3. **`node`** - The result is an AST object (tree):
+   - This is NOT a string anymore
+   - It's a complex Python object (tree structure)
+
+---
+###* *Visual Representation:**
+```
+INPUT (String):
+"x + y"
+
+       ↓ ast.parse() ↓
+
+OUTPUT (Tree Structure):
+         Module
+            ↓
+          Expr
+            ↓
+         BinOp
+        /  |  \
+       /   |   \
+    Name  Add  Name
+    (x)   (+)  (y)
+2. ast.dump() - The Tree Viewer
+What it does:
+Converts the tree structure (AST object) back into a readable text format so humans can see it.
+Analogy:
+Like taking an X-ray of the tree structure - it shows you what's inside.
+Detailed Explanation:
+print(ast.dump(node, indent=2))
+Breaking it down:
+node - The tree structure from ast.parse() 
+This is a complex object you can't easily read
+It's like a black box
+ast.dump() - Shows you what's inside: 
+Takes the tree object
+Converts it to readable text
+Shows the structure in Python-like syntax
+Module(
+  body=[
+    Expr(
+      value=BinOp(
+        left=Name(id='x', ctx=Load()),
+        op=Add(),
+        right=Name(id='y', ctx=Load())
+      )
+    )
+  ],
+  type_ignores=[]
+)
+Reading this:
+Module - Top-level container (every Python file is a module)
+body=[...] - Contents of the module
+Expr - An expression (something that returns a value)
+BinOp - Binary operation (two things with an operator) 
+left=Name(id='x') - Left side is variable x
+op=Add() - Operator is +
+right=Name(id='y') - Right side is variable y
+3. indent=2 - The Formatting Parameter
+What it does:
+Makes the output pretty and readable by adding indentation (spaces).
+Comparison:
+WITHOUT indent=2:
+print(ast.dump(node))
+
+# Output (all on one line):
+Module(body=[Expr(value=BinOp(left=Name(id='x', ctx=Load()), op=Add(), right=Name(id='y', ctx=Load())))], type_ignores=[])
+Problem: Hard to read! Everything is squished together.
+WITH indent=2:
+print(ast.dump(node, indent=2))
+
+# Output (nicely formatted):
+Module(
+  body=[
+    Expr(
+      value=BinOp(
+        left=Name(id='x', ctx=Load()),
+        op=Add(),
+        right=Name(id='y', ctx=Load())
+      )
+    )
+  ],
+  type_ignores=[]
+)
+Better! You can see the tree structure clearly.
+Parsing Python Code into ASTs
+Python's ast module provides the parse() function to convert source code into an AST. This is the first step in working with ASTs and allows us to examine the structure of our code programmatically.
+import ast
+
+# Parse a more complex Python code snippet
+code = """
+def greet(name):
+    return f"Hello, {name}!"
+
+print(greet("World"))
+"""
+
+tree = ast.parse(code)
+print(ast.dump(tree, indent=2))
+==================================================
+FILE: AI Enabled Recommendation Engine for an E-commerce Platform 8-9pm class.pptx
+==================================================
+VS Code installation: Youtube video link
+
+https://www.youtube.com/watch?v=cu_ykIfBprI
+Python installation: Youtube video link
+
+https://www.youtube.com/watch?v=ddGTXBhaGWA
+These are the Required Installation in your system to develop this project.
+This is an 8 weeks Project
+
+Project: AI Enabled Recommendation Engine for an E-commerce Platform
+What is recommendation systemA recommendation system is an AI system that predicts what a user will like. It learns from user activity, browsing, purchases, and item similarities. Then it shows personalized suggestions like Amazon’s product list or Netflix’s movie list.
+
+A recommendation system is an AI system that learns what a user likes and suggests items that they are most likely to buy.
+
+
+Real-Life Examples
+Use examples everyone understands:
+Amazon suggesting products
+Netflix recommending movies
+Spotify giving song playlists
+YouTube suggesting videos
+Nykaa/Myntra showing personalized products
+Make it relatable:
+“When you search once for shoes, suddenly you start seeing shoe recommendations everywhere — that’s the recommendation system at work.”
+Why Do Companies Use Recommendation Systems?
+Explain the purpose:
+To increase sales
+To improve user experience
+To keep users engaged for longer
+To show relevant content instead of random items
+Example:
+Netflix says 80% of movies watched come from recommendations.
+
+What Inputs Do Recommendation Systems Use?
+Tell them what data goes in:
+User's past purchases
+Browsing history
+Ratings & reviews
+Items clicked or added to cart
+Similar users’ behavior
+Item characteristics (price, category, brand, etc.)
+
+USER A AND USER B
+Output of the System
+What does the recommendation system produce?
+“Recommended for You”
+“Because you watched…”
+“People who bought this also bought…”
+“Top picks for you”
+
+
+“Our project will do the same: learn user preferences and recommend products in an e-commerce dataset.
+Project Goal — Explanation
+1. Start With the Main Goal
+“The goal of our project is to build an AI system that recommends the best products to a user in an e-commerce platform.”
+Explain it simply:
+If a user likes mobile phones, the model should show similar mobiles.
+If someone buys skincare items, the model should show related beauty products.
+
+2. What Data We Will Use
+“We will use two types of data:1. User behavior data
+What users clicked
+What they viewed
+What they added to cart
+What they purchased
+Ratings or reviews
+2. Product data
+Category
+Brand
+Description
+Price
+Features (size, color, specs, etc.)”
+This helps students understand where the intelligence comes from.
+Two Main Approaches We Will Learn
+Explain the two ML approaches used in recommendation systems:
+
+A. Content-Based Filtering
+Recommends items similar to what the user has liked before
+Uses item features (category, brand, description)
+Example:If a user liked a Samsung phone, the system recommends other Samsung or similar phones.
+Tell them:
+“The model focuses on the item content to find similar items.”
+
+B. Collaborative Filtering
+Recommends items based on similar users behavior, similar users purchased history
+Looks at patterns in user behavior
+Example:
+“If User A and User B watch similar movies, and A liked a new movie, we recommend it to B.”
+Tell students:
+“This approach does not depend on item features, but on user–user or item–item relationships.”
+
+Till this
+Artificial intelligence (AI) is the field of technology and computer science focused on creating systems—such as computers or robots—that can perform tasks typically associated with human intelligence. These tasks include learning from data, reasoning, problem-solving, perception, making decisions, understanding language, recognizing images or speech, and more.
+ 
+AI is used across a wide range of modern applications: from recommendation engines (like those in Netflix or Amazon), to virtual assistants (such as Siri and Alexa), chatbots, self-driving cars, image analysis in healthcare, fraud detection in finance, and much more.
+ 
+AI is essentially about machines being able to “think” or solve problems in ways that were previously only possible for humans.
+These are the basics which should know before developing this project.
+One Technique that creates the most impact in the domain of AI that is Machine Learning.Machine Learning means That we give so much data to any mathematical or statical algorithm and our goal is that the particular algorithm can get the pattern from the data so that  if we provide them to new data then it can be able to do some prediction. 
+ 
+In Machine learning, we can create 3-4 types of model.
+A model which can predict numbers, basically regression problem. Eg. A model can predict the tomorrow's stock price of a company?
+Classification problem model. Eg. A model can predict that in the picture there is cat or a dog?
+Recommendation system.
+ 
+But, Never machine learning was used there need of human creativity was felt. But, after Generative AI this thing has been changed what is the biggest main difference with GEN AI is that it can create new data as text, images etc. So, it has the capability of mimick the human creativity.
+What is GENAI?
+ 
+Gen AI is a type of artificial intelligence that creates new content -  such as text, images, music or code - by learning patterns from existing data, mimicking human creativity.
+GEN AI significant Impact areas:
+Customer Support, eg. Chatbot for customer handling
+Content Creation eg. It can create new content, any text based, video based.
+Education eg. After chatgpt our learning pattern has changed. Now everyone has their personal tutor.
+Software development eg. Generative models are really good in writing production ready codes.
+Generative AI is successful  technology or not?
+Does it solve real world problems? Yes
+As it is use for customer handling which is a problem of many companies.
+And, everyone now is getting their personal tutor.
+Is it useful on daily basis? Yes
+Yes the tools we have in gen ai we use daily and we are getting profit from that.
+What is an LLM?
+LLM = Large Language Model
+It is a type of AI system that can understand and generate human language (like English, Hindi, etc.) just by learning from huge amounts of text.
+Think of an LLM as:
+A super-advanced autocomplete that learned from books, websites, conversations, and documents to understand how humans communicate.
+A Large Language Model (LLM) is an artificial intelligence system that learns from huge amounts of text and can understand language, complete sentences, and predict the next word or set of words in a meaningful way.
+LLM is an AI that predicts the next words intelligently to generate human-like text.
+==================================================
+FILE: AI Enabled Recommendation Engine for an E-commerce Platform - Group 1 1 (1).xlsx
+==================================================
+Sheet: Sheet1
+                               Email ID     Batch                     Tech                Name  Vendor                                                          Project title      username     password
+0               goswamiadi890@gmail.com  Batch 13  Artificial Intelligence      Aditya Goswami  VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1  aditya_G_111  Aditya@m111
+1             sanapraveen0614@gmail.com  Batch 13  Artificial Intelligence        Sana Parveen  VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1    sana_P_112    Sana@m112
+2                nabhjain8015@gmail.com  Batch 13  Artificial Intelligence           Nabh Jain  VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1    nabh_J_113    Nabh@m113
+3             diljincjames000@gmail.com  Batch 13  Artificial Intelligence     Diljin C James   VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1  diljin_C_114  Diljin@m114
+4          navyachittemshetti@gmail.com  Batch 13  Artificial Intelligence  Chittemsetti Navya  VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1  chitte_N_115  Chitte@m115
+5               priyanshi3202@gmail.com  Batch 13  Artificial Intelligence     Priyanshi Yadav  VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1  priyan_Y_116  Priyan@m116
+6   dakinisvaris02_bcs27@mepcoeng.ac.in  Batch 13  Artificial Intelligence       Dakinisvari S  VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1  dakini_S_117  Dakini@m117
+7                pavithra3705@gmail.com  Batch 13  Artificial Intelligence          Pavithra N  VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1  pavith_N_118  Pavith@m118
+8              vish22053.cb@rmkec.ac.in  Batch 13  Artificial Intelligence       VISHWAKANTH P  VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1  vishwa_P_119  Vishwa@m119
+9                 231055.cb@rmkec.ac.in  Batch 13  Artificial Intelligence       Maha Swetha B  VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1    maha_S_120    Maha@m120
+10                 dsivasai05@gmail.com  Batch 13  Artificial Intelligence   Davuluri Siva Sai  VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1  davulu_S_121  Davulu@m121
+11     sanjaykrishnan20082006@gmail.com  Batch 13  Artificial Intelligence   SANJAY KRISHNAN K  VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1  sanjay_K_122  Sanjay@m122
+12             aravindhst2006@gmail.com  Batch 13  Artificial Intelligence          Aravindh S  VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1  aravin_S_123  Aravin@m123
+13                vsaketh1403@gmail.com  Batch 13  Artificial Intelligence       Saketh Vemula  VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1  saketh_V_124  Saketh@m124
+14             poojaangadi343@gmail.com  Batch 13  Artificial Intelligence               Pooja  VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1    pooja__125   Pooja@m125
+15               anujatappeta@gmail.com  Batch 13  Artificial Intelligence      Anuja Tappeta   VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1   anuja_T_126   Anuja@m126
+16               dussaakash64@gmail.com  Batch 13  Artificial Intelligence      D .Akash kumar  VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1        d__127     Dxx@m127
+17              nivethithae05@gmail.com  Batch 13  Artificial Intelligence        Nivethitha E  VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1  niveth_E_128  Niveth@m128
+18          vinukondaswapnika@gmail.com  Batch 13  Artificial Intelligence  Vinakonda Swapnika  VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1  vinako_S_129  Vinako@m129
+19                240259.it@rmkec.ac.in  Batch 13  Artificial Intelligence      SAI SARAN H A   VidzAI  AI Enabled Recommendation Engine for an E-commerce Platform - Group 1     sai_S_130     Sai@m130
+==================================================
+FILE: Defect_Tracker Template_v0.1.xlsx
+==================================================
+Sheet: Defects
+   Sl No Submitted By Submitted Date                                                                 Description          Detected Sprint Assigned To   Type Of Defect                                    Action Taken Action Taken Date Status(Open/Closed)                                     Remarks
+0      1  [Your Name]     2025-12-05  Missing values in user purchase history causing errors in user-item matrix  Milestone 1 (Weeks 1–2)        Self          Logical       Cleaned dataset and filled missing values        2025-12-05              Closed   User-item matrix ready for model training
+1      2  [Your Name]     2025-12-16             Recommendation model gives irrelevant suggestions for new users  Milestone 2 (Weeks 3–4)        Self          Logical       Added fallback logic for cold-start users        2025-12-16              Closed  Recommendations now relevant for new users
+2      3  [Your Name]     2025-12-29                          Duplicate products appear in recommendation output  Milestone 3 (Weeks 5–6)        Self  Maintainability       Implemented duplicate filtering in output        2025-12-29              Closed              Recommendations are now unique
+3      4  [Your Name]     2026-01-05                        Recommendation response time is slow on product page  Milestone 3 (Weeks 5–6)        Self        Standards               Optimized query and caching logic        2026-01-05              Closed         Response time reduced to <2 seconds
+4      5  [Your Name]     2026-01-12               Frontend integration shows errors while rendering suggestions  Milestone 4 (Weeks 7–8)        Self          Logical  Adjusted API response format and frontend code        2026-01-12              Closed           Recommendations display correctly
+Sheet: Sheet2
+           Logical
+0   User Interface
+1  Maintainability
+2        Standards
+3           Others
+==================================================
+FILE: Unit_Test_Plan_v0.1.xlsx
+==================================================
+Sheet: UT
+   Sl: No:                 Test Case Name                                                          Test Procedure                              Condition to be tested                                               Expected Result                                               Actual Result
+0        1                Data Collection                          Load user and product datasets into the system             All datasets are available and readable                    Data is successfully loaded without errors             Data loaded successfully; no errors encountered
+1        2  Data Cleaning & Preprocessing                Handle missing values, remove duplicates, normalize data  Dataset has missing values or inconsistent formats  Cleaned dataset with no missing values and consistent format                  Data cleaned and preprocessed successfully
+2        3            Algorithm Selection  Implement collaborative filtering or content-based filtering algorithm    Algorithm selected as per module 2 specification                            Algorithm is implemented correctly  Content & Collaborative filtering implemented successfully
+3        4      Recommendation Generation                             Generate product recommendations for a user                              User exists in dataset               System returns relevant product recommendations           Recommendations generated correctly for all users
+4        5              System Deployment                                        Deploy model to test environment             Model deployed on live-like environment   Model runs without errors and recommendations are available        Model deployed successfully; system running smoothly
+==================================================
+FILE: Agile_Template_v0.1.xls
+==================================================
+Sheet: Product Backlog
+  Planned Sprint Actual Sprint  US ID                                                    User Story Description       MOSCOW Dependency   Assignee        Status
+0       Sprint 1      Sprint 1  US-01            As a user, I want to view personalized product recommendations    MUST HAVE        NaN  Your name  3- Completed
+1       Sprint 2      Sprint 2  US-02  As a user, I want recommendations based on my past purchases and ratings    MUST HAVE      US-01  Your name  3- Completed
+2       Sprint 3      Sprint 3  US-03                      As a user, I want to see similar product suggestions    MUST HAVE      US-02  Your name  3- Completed
+3       Sprint 4      Sprint 4  US-04  As a user, I want popular product recommendations when no history exists  SHOULD HAVE      US-03  Your name  3- Completed
+4       Sprint 5      Sprint 5  US-05                  As a user, I want accurate and relevant recommendations     MUST HAVE      US-04  Your name  3- Completed
+Sheet: Sprint Backlog
+   NOTES:  Task sizing should be between 0.5 to 12 hours Unnamed: 1                                                   Unnamed: 2           Unnamed: 3            Unnamed: 4   Unnamed: 5 Unnamed: 6    Unnamed: 7                           Unnamed: 8 Unnamed: 9 Unnamed: 10 Unnamed: 11 Unnamed: 12 Unnamed: 13 Unnamed: 14 Unnamed: 15 Unnamed: 16 Unnamed: 17 Unnamed: 18 Unnamed: 19 Unnamed: 20 Unnamed: 21 Unnamed: 22
+0                                                  US ID    Task ID                                             Task Description      Task Start Date  Task Completion Date  Team Member   Activity        Status  Original Estimate Effort (In Hours)      Day 1       Day 2       Day 3       Day 4       Day 5       Day 6       Day 7       Day 8       Day 9      Day 10      Day 11      Day 12      Day 13      Day 14
+1                                                    NaN        NaN                                                          NaN                  NaN                   NaN          NaN        NaN           NaN                                    3          3           0           0           0           0           0           0           0           0           0           0           0           0           0
+2                                     SPRINT  1  BACKLOG        NaN                                                          NaN                  NaN                   NaN          NaN        NaN           NaN                                  NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN
+3                                                  US-01       T-01                         Dataset collection and preprocessing  2025-12-04 00:00:00   2025-12-05 00:00:00    Your Name      Build  3- Completed                                    1          1           0           0           0           0           0           0           0           0           0           0           0           0           0
+4                                                  US-01       T-02      Handle cold-start problem using popularity-based logic   2025-12-15 00:00:00   2025-12-16 00:00:00    Your Name     Design  3- Completed                                    1          1           0           0           0           0           0           0           0           0           0           0           0           0           0
+5                                                  US-01       T-03  Evaluate recommendation accuracy using precision and recall  2025-12-29 00:00:00   2025-12-30 00:00:00    Your Name  Unit Test  3- Completed                                    1          1           0           0           0           0           0           0           0           0           0           0           0           0           0
+6                                                    NaN        NaN                                                          NaN                  NaN                   NaN          NaN        NaN           NaN                                  NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN
+7                                                    NaN        NaN                                                          NaN                  NaN                   NaN          NaN        NaN           NaN                                  NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN
+8                                                    NaN        NaN                                                          NaN                  NaN                   NaN          NaN        NaN           NaN                                  NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN
+9                                                    NaN        NaN                                                          NaN                  NaN                   NaN          NaN        NaN           NaN                                  NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN
+10                                                   NaN        NaN                                                          NaN                  NaN                   NaN          NaN        NaN           NaN                                  NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN
+11                                                   NaN        NaN                                                          NaN                  NaN                   NaN          NaN        NaN           NaN                                  NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN
+12                                                   NaN        NaN                                                          NaN                  NaN                   NaN          NaN        NaN           NaN                                  NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN
+13                                                   NaN        NaN                                                          NaN                  NaN                   NaN          NaN        NaN           NaN                                  NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN
+14                                                   NaN        NaN                                                          NaN                  NaN                   NaN          NaN        NaN           NaN                                  NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN
+15                                                   NaN        NaN                                                          NaN                  NaN                   NaN          NaN        NaN           NaN                                  NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN
+16                                                   NaN        NaN                                                          NaN                  NaN                   NaN          NaN        NaN           NaN                                  NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN
+17                                                   NaN        NaN                                                          NaN                  NaN                   NaN          NaN        NaN           NaN                                  NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN
+18                                                   NaN        NaN                                                          NaN                  NaN                   NaN          NaN        NaN           NaN                                  NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN
+19                                                   NaN        NaN                                                          NaN                  NaN                   NaN          NaN        NaN           NaN                                  NaN        NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN         NaN
+Sheet: Stand up Meeting
+    Sprint     Day                                                     Impediments                                                                         Action Taken
+0  Sprint 1  Day 1                                                             NaN           Collected user interaction and product data and reviewed dataset structure
+1  Sprint 1  Day 2   Missing values and inconsistent user-product interaction data             Performed data cleaning, handling missing values and normalizing dataset
+2  Sprint 1  Day 3  Difficulty in selecting an appropriate recommendation approach    Analyzed collaborative and content-based filtering and finalized both approaches.
+3  Sprint 1  Day 4                     Cold-start issue for new users and products                                    Implemented fallback logic using popular products
+4  Sprint 1  Day 5                  Low initial accuracy of recommendation results  Tuned model parameters and evaluated performance using precision and recall metrics
+Sheet: Retrospection
+   SL #  Sprint # Sprint start date Sprint end date Team member name                                   Start Doing                                             Stop Doing                           Continue Doing                                                                  Action taken
+0     1       1.0        2025-12-01      2025-12-14         Your name  Early data profiling before model selection  Jumping into modeling without sufficient data analysis  Regular evaluation and parameter tuning  Followed a structured workflow for data preprocessing and model development
+1     2       NaN               NaT             NaT               NaN                                          NaN                                                     NaN                                      NaN                                                                          NaN
+2     3       NaN               NaT             NaT               NaN                                          NaN                                                     NaN                                      NaN                                                                          NaN
+3     4       NaN               NaT             NaT               NaN                                          NaN                                                     NaN                                      NaN                                                                          NaN
+4     5       NaN               NaT             NaT               NaN                                          NaN                                                     NaN                                      NaN                                                                          NaN
+5     6       NaN               NaT             NaT               NaN                                          NaN                                                     NaN                                      NaN                                                                          NaN
+6     7       NaN               NaT             NaT               NaN                                          NaN                                                     NaN                                      NaN                                                                          NaN
