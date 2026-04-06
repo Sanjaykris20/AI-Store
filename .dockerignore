@@ -1,0 +1,36 @@
+# Node modules
+node_modules/
+
+# Python cache and environments
+__pycache__/
+*.pyc
+venv/
+.venv/
+env/
+
+# Reflex internal files
+.web/
+.states/
+.db
+
+# Git
+.git
+.gitignore
+
+# Env files (keep them out of the image for security, use Render env vars instead)
+.env
+.env.template
+
+# Documentation and presentations
+things to do/
+*.pptx
+*.docx
+*.xlsx
+*.csv
+# If you need specific CSVs for the backend, comment out below as needed
+# clean_data.csv
+# cleaned_data.csv
+
+# Others
+.DS_Store
+.sixth/

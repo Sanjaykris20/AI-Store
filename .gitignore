@@ -13,3 +13,12 @@ env/
 # Secrets and Keys (DO NOT REMOVE)
 .env
 serviceAccountKey.json
+
+# Project Specific Exclusions
+clean_data.csv
+things to do/
+check_llm.py
+*.pptx
+*.docx
+*.xlsx
+*.xls
