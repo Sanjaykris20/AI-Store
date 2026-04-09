@@ -7,7 +7,12 @@ from config import DATA_PATH
 class ProductsState(rx.State):
     """Local state for fetching global catalog of products."""
     all_products: List[Dict[str, Any]] = []
+    filtered_products: List[Dict[str, Any]] = []
     search_query: str = ""
+    selected_category: str = "All Categories"
+    sort_by: str = "Price: Low to High"
+    items_per_page: int = 20
+    current_page: int = 1
     past_searches: List[str] = []
     sort_order: str = "default" # default, low_to_high, high_to_low
     
@@ -38,10 +43,18 @@ class ProductsState(rx.State):
     
     def fetch_products(self):
         # Extract query from URL if visiting via search redirect
-        params = self.router.page.params
-        if "q" in params:
-            self.search_query = params["q"]
-        else:
+        try:
+            # Try to get params from router (handle both old and new API)
+            if hasattr(self.router, 'url_params'):
+                params = self.router.url_params
+            else:
+                params = self.router.page.params if hasattr(self.router, 'page') else {}
+            
+            if "q" in params:
+                self.search_query = params["q"]
+            else:
+                self.search_query = ""
+        except Exception:
             self.search_query = ""
             
         try:
@@ -84,6 +97,7 @@ class ProductsState(rx.State):
                     unique_products["Rating"] = unique_products["Rating"].apply(lambda x: f"{float(x):.1f}" if pd.notnull(x) and str(x) != "" else "N/A")
                 
                 self.all_products = unique_products.to_dict('records')
+                self.apply_filters()  # Apply initial filters
         except Exception as e:
             print(f"Error fetching products: {e}")
 
@@ -99,3 +113,58 @@ class ProductsState(rx.State):
         query = form_data.get("q", "")
         # Force a redirect to the home page with the query
         return rx.redirect(f"/?q={query}")
+
+    def set_search_query(self, value: str):
+        """Set search query and apply filters."""
+        self.search_query = value
+        self.apply_filters()
+
+    def set_selected_category(self, value: str):
+        """Set selected category and apply filters."""
+        self.selected_category = value
+        self.apply_filters()
+
+    def set_sort_by(self, value: str):
+        """Set sort option and apply filters."""
+        self.sort_by = value
+        self.apply_filters()
+
+    def apply_filters(self):
+        """Apply search, category, and sort filters to products."""
+        filtered = self.all_products.copy()
+
+        # Apply search filter
+        if self.search_query:
+            filtered = [
+                product for product in filtered
+                if self.search_query.lower() in product.get('Brand', '').lower() or
+                   self.search_query.lower() in product.get('Category', '').lower() or
+                   self.search_query.lower() in product.get('Description', '').lower()
+            ]
+
+        # Apply category filter
+        if self.selected_category != "All Categories":
+            filtered = [
+                product for product in filtered
+                if product.get('Category', '') == self.selected_category
+            ]
+
+        # Apply sorting
+        if self.sort_by == "Price: Low to High":
+            filtered.sort(key=lambda x: float(x.get('Price_Num', 0)))
+        elif self.sort_by == "Price: High to Low":
+            filtered.sort(key=lambda x: float(x.get('Price_Num', 0)), reverse=True)
+        elif self.sort_by == "Rating":
+            filtered.sort(key=lambda x: float(x.get('Rating', '0').replace('N/A', '0')), reverse=True)
+        elif self.sort_by == "Newest":
+            filtered.sort(key=lambda x: x.get('ProdID', 0), reverse=True)
+
+        # Apply pagination
+        start_idx = 0
+        end_idx = self.current_page * self.items_per_page
+        self.filtered_products = filtered[:end_idx]
+
+    def load_more_products(self):
+        """Load more products for pagination."""
+        self.current_page += 1
+        self.apply_filters()

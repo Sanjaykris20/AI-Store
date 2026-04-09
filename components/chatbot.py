@@ -41,6 +41,10 @@ class ChatState(rx.State):
     ]
     current_input: str = ""
 
+    def set_current_input(self, value: str):
+        """Explicit setter for current_input field."""
+        self.current_input = value
+
     def toggle_chat(self):
         self.is_open = not self.is_open
 
@@ -87,28 +91,44 @@ class ChatState(rx.State):
         except Exception as e:
             self.messages.append({"role": "assistant", "content": f"API Error: {str(e)}"})
 
+    def handle_key_down(self, key: str):
+        """Send message when Enter is pressed."""
+        if key == "Enter":
+            return ChatState.send_message
+
 
 def chatbot() -> rx.Component:
-    """Floating AI assistant for the E-commerce app."""
+    """Floating AI assistant for the E-commerce app with premium design."""
     return rx.box(
         rx.cond(
             ChatState.is_open,
-            rx.card(
+            rx.box(
                 rx.vstack(
                     # ── Header ────────────────────────────────────────────
                     rx.hstack(
-                        rx.icon(tag="bot", color="blue"),
-                        rx.heading("AI Assistant", size="4"),
+                        rx.vstack(
+                            rx.hstack(
+                                rx.icon("sparkles", size=18, color="#60a5fa"),
+                                rx.heading("AI Concierge", size="4", color="white", weight="bold"),
+                                spacing="2",
+                            ),
+                            rx.text("Online & Ready to Help", color="#34d399", size="1", font_weight="500"),
+                            spacing="0",
+                            align_items="start",
+                        ),
                         rx.spacer(),
                         rx.button(
-                            rx.icon("x"),
+                            rx.icon("minus", size=18),
                             size="1",
                             variant="ghost",
                             on_click=ChatState.toggle_chat,
+                            color="rgba(255,255,255,0.4)",
+                            _hover={"background": "rgba(255,255,255,0.1)", "color": "white"},
                         ),
                         width="100%",
-                        border_bottom="1px solid #eaeaea",
-                        padding_bottom="0.5rem",
+                        padding="1.5rem",
+                        background="rgba(255,255,255,0.03)",
+                        border_bottom="1px solid rgba(255,255,255,0.1)",
                     ),
 
                     # ── Messages ──────────────────────────────────────────
@@ -116,78 +136,154 @@ def chatbot() -> rx.Component:
                         rx.foreach(
                             ChatState.messages,
                             lambda m: rx.box(
-                                rx.markdown(m["content"]),
-                                background_color=rx.cond(
-                                    m["role"] == "user", "blue.100", "gray.100"
+                                rx.vstack(
+                                    rx.text(
+                                        rx.cond(m["role"] == "user", "You", "Concierge"),
+                                        size="1",
+                                        color="rgba(255,255,255,0.4)",
+                                        margin_bottom="0.2rem",
+                                        text_align=rx.cond(m["role"] == "user", "right", "left"),
+                                        width="100%",
+                                    ),
+                                    rx.box(
+                                        rx.markdown(m["content"]),
+                                        background=rx.cond(
+                                            m["role"] == "user", 
+                                            "linear-gradient(135deg, #3b82f6, #1d4ed8)", 
+                                            "rgba(255,255,255,0.05)"
+                                        ),
+                                        color="white",
+                                        padding="0.8rem 1.2rem",
+                                        border_radius=rx.cond(
+                                            m["role"] == "user", 
+                                            "20px 20px 4px 20px", 
+                                            "20px 20px 20px 4px"
+                                        ),
+                                        border=rx.cond(
+                                            m["role"] == "user",
+                                            "none",
+                                            "1px solid rgba(255,255,255,0.1)"
+                                        ),
+                                        box_shadow=rx.cond(
+                                            m["role"] == "user",
+                                            "0 4px 15px rgba(59,130,246,0.3)",
+                                            "none"
+                                        ),
+                                    ),
+                                    align_items=rx.cond(m["role"] == "user", "end", "start"),
                                 ),
-                                color=rx.cond(m["role"] == "user", "blue.900", "black"),
-                                padding="0.75rem",
-                                border_radius="lg",
                                 align_self=rx.cond(
                                     m["role"] == "user", "flex-end", "flex-start"
                                 ),
                                 max_width="85%",
-                                # Apply basic styling to links within markdown
                                 sx={
-                                    "p": {"margin_bottom": "0.5em", "font_size": "0.875rem"},
-                                    "ul": {"padding_left": "1.25em"},
-                                    "a": {"color": "#4f46e5", "font_weight": "bold", "text_decoration": "none"},
-                                    "a:hover": {"text_decoration": "underline"}
+                                    "p": {"margin": "0", "font_size": "0.9rem", "line_height": "1.5"},
+                                    "ul": {"padding_left": "1.2em", "margin": "0.5em 0"},
+                                    "a": {"color": "#60a5fa", "font_weight": "bold", "text_decoration": "underline"},
                                 }
                             ),
                         ),
                         width="100%",
-                        height="380px",
+                        height="420px",
                         overflow_y="auto",
-                        padding_y="1rem",
+                        padding="1.5rem",
                         align_items="stretch",
-                        spacing="2",
+                        spacing="4",
+                        css={
+                            "&::-webkit-scrollbar": {
+                                "width": "4px",
+                            },
+                            "&::-webkit-scrollbar-thumb": {
+                                "background": "rgba(255,255,255,0.1)",
+                                "border-radius": "10px",
+                            },
+                        },
                     ),
 
                     # ── Input ─────────────────────────────────────────────
-                    rx.hstack(
-                        rx.input(
-                            placeholder="Ask about products...",
-                            value=ChatState.current_input,
-                            on_change=ChatState.set_current_input,
-                            on_key_down=lambda e: rx.cond(
-                                e == "Enter", ChatState.send_message(), rx.noop()
+                    rx.box(
+                        rx.hstack(
+                            rx.input(
+                                placeholder="Whisper your desires...",
+                                value=ChatState.current_input,
+                                on_change=ChatState.set_current_input,
+                                on_key_down=ChatState.handle_key_down,
+                                border="1px solid rgba(255,255,255,0.1)",
+                                background="rgba(0,0,0,0.2)",
+                                color="white",
+                                border_radius="xl",
+                                _focus={"border": "1px solid #3b82f6", "box_shadow": "0 0 10px rgba(59,130,246,0.2)"},
+                                height="2.8rem",
+                            ),
+                            rx.button(
+                                rx.icon("send", size=18),
+                                on_click=ChatState.send_message,
+                                background="linear-gradient(135deg, #3b82f6, #1d4ed8)",
+                                color="white",
+                                border_radius="xl",
+                                height="2.8rem",
+                                _hover={"transform": "scale(1.05)", "box_shadow": "0 0 15px rgba(59,130,246,0.4)"},
                             ),
                             width="100%",
+                            padding="1.5rem",
+                            spacing="3",
                         ),
-                        rx.button(
-                            rx.icon("send"),
-                            on_click=ChatState.send_message,
-                            color_scheme="blue",
-                        ),
+                        border_top="1px solid rgba(255,255,255,0.1)",
                         width="100%",
                     ),
 
                     width="100%",
-                    height="100%",
-                    spacing="2",
+                    spacing="0",
                 ),
                 position="fixed",
-                bottom="5rem",
+                bottom="6rem",
                 right="2rem",
-                width="390px",
-                shadow="2xl",
-                border_radius="lg",
+                width="400px",
+                background="rgba(15, 23, 42, 0.85)",
+                backdrop_filter="blur(25px)",
+                border="1px solid rgba(59,130,246,0.2)",
+                border_radius="3xl",
+                box_shadow="0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(59,130,246,0.1)",
                 z_index="2000",
-                background_color="white",
+                overflow="hidden",
             ),
         ),
 
-        # ── FAB ───────────────────────────────────────────────────────────
+        # ── FAB toggle ──────────────────────────────────────────────────
         rx.button(
-            rx.icon(tag="message-circle", size=24),
+            rx.cond(
+                ChatState.is_open,
+                rx.icon("chevron-down", size=24),
+                rx.hstack(
+                    rx.box(
+                        background="#3b82f6",
+                        width="8px",
+                        height="8px",
+                        border_radius="full",
+                        box_shadow="0 0 10px #3b82f6",
+                    ),
+                    rx.icon("message-square", size=22),
+                    rx.text("AI Help", size="2", weight="bold"),
+                    spacing="2",
+                    padding_x="4px",
+                ),
+            ),
             position="fixed",
             bottom="2rem",
             right="2rem",
-            size="4",
-            border_radius="full",
-            color_scheme="indigo",
-            shadow="xl",
+            height="3.5rem",
+            px=rx.cond(ChatState.is_open, "1rem", "1.5rem"),
+            border_radius="2rem",
+            background="linear-gradient(135deg, #1e293b, #0f172a)",
+            color="white",
+            border="1px solid rgba(59,130,246,0.4)",
+            box_shadow="0 10px 30px rgba(0,0,0,0.4), 0 0 20px rgba(59,130,246,0.2)",
+            _hover={
+                "transform": "translateY(-4px) scale(1.05)",
+                "box_shadow": "0 15px 40px rgba(0,0,0,0.5), 0 0 30px rgba(59,130,246,0.3)",
+                "border_color": "#3b82f6",
+            },
+            transition="all 0.3s ease",
             on_click=ChatState.toggle_chat,
             z_index="2000",
         ),
